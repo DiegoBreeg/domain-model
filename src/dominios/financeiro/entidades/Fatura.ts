@@ -22,19 +22,21 @@ type EstadoDaFatura = {
 
 export class Fatura {
     private id: string;
-    private userId: string;
+    private usuarioId: string;
     private gatewayId: string;
-    private value: string;
-    private dueDate: Date;
-    private createdAt: Date;
+    private valor: string;
+    private dataDeVencimento: Date;
+    private pagoEm: Date;
+    private criadoEm: Date;
     private tipoDePagamento: TipoDePagamento;
 
     private constructor(dados: DadosParaCriarFatura) {
         this.id = dados.id;
-        this.userId = dados.usuarioId;
+        this.usuarioId = dados.usuarioId;
         this.gatewayId = dados.gatewayId;
-        this.value = dados.valor;
-        this.dueDate = dados.dataDeVencimento;
+        this.valor = dados.valor;
+        this.dataDeVencimento = dados.dataDeVencimento;
+        this.pagoEm = dados.pagoEm;
         this.createdAt = new Date();
         this.tipoDePagamento = dados.tipoDePagamento;
     }
