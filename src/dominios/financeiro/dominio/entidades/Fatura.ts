@@ -1,11 +1,13 @@
+import { Dinheiro } from "../objetos-de-valor/Dinheiro";
+
 type TipoDePagamento = "CREDIT_CARD" | "BOLETO" | "PIX";
-type Estado = "ABERTA" | "PAGA" | "CANCELADA"
+type Estado = "ABERTA" | "PAGA" | "CANCELADA";
 
 type DadosParaCriarFatura = {
     id: string;
     usuarioId: string;
     gatewayId: string;
-    valor: string;
+    valor: Dinheiro;
     dataDeVencimento: Date;
     tipoDePagamento: TipoDePagamento;
 }
@@ -14,7 +16,7 @@ type DadosParaRestaurarFatura = {
     id: string;
     usuarioId: string;
     gatewayId: string;
-    valor: string;
+    valor: Dinheiro;
     dataDeVencimento: Date;
     tipoDePagamento: TipoDePagamento;
     criadoEm: Date;
@@ -23,31 +25,43 @@ type DadosParaRestaurarFatura = {
 }
 
 export class Fatura {
+    #id: string;
+    #usuarioId: string;
+    #gatewayId: string;
+    #valor: Dinheiro;
+    #dataDeVencimento: Date;
+    #tipoDePagamento: TipoDePagamento;
+    #criadoEm: Date;
+    #pagoEm: Date | null;
+    #estado: Estado;
 
     private constructor(
-        private id: string,
-        private usuarioId: string,
-        private gatewayId: string,
-        private valor: string,
-        private dataDeVencimento: Date,
-        private tipoDePagamento: TipoDePagamento,
-        private criadoEm: Date,
-        private pagoEm: Date | null,
-        private estado: Estado,
+        id: string,
+        usuarioId: string,
+        gatewayId: string,
+        valor: Dinheiro,
+        dataDeVencimento: Date,
+        tipoDePagamento: TipoDePagamento,
+        criadoEm: Date,
+        pagoEm: Date | null,
+        estado: Estado,
     ) {
-
+        this.#id = id;
+        this.#usuarioId = usuarioId;
+        this.#gatewayId = gatewayId;
+        this.#valor = valor;
+        this.#dataDeVencimento = dataDeVencimento;
+        this.#tipoDePagamento = tipoDePagamento;
+        this.#criadoEm = criadoEm;
+        this.#pagoEm = pagoEm;
+        this.#estado = estado;
     }
 
     public static criar(dados: DadosParaCriarFatura) {
         const dataAtual = new Date();
 
-        if(dados.dataDeVencimento < dataAtual)
-            throw new Error("Data de vencimento não pode ser menor do que agora!");
-
-        if(dados.valor < 0) {
-            
-        }
-
+        if (dados.dataDeVencimento < dataAtual)
+            throw new Error("Data de vencimento não pode ser menor do a data atual!");
 
         return new Fatura(
             dados.id,
@@ -56,43 +70,56 @@ export class Fatura {
             dados.valor,
             dados.dataDeVencimento,
             dados.tipoDePagamento,
-           dataAtual,
-           null,
-           "ABERTA"
+            dataAtual,
+            null,
+            "ABERTA"
         );
     }
 
-    public static restaurar(estado: DadosParaRestaurarFatura) {
+    public static restaurar(dados: DadosParaRestaurarFatura) {
 
         return new Fatura(
-            estado.id,
-            estado.usuarioId,
-            estado.gatewayId,
-            estado.valor,
-            estado.dataDeVencimento,
-            estado.tipoDePagamento,
-            estado.criadoEm,
-            estado.pagoEm,
-            estado.estado,
+            dados.id,
+            dados.usuarioId,
+            dados.gatewayId,
+            dados.valor,
+            dados.dataDeVencimento,
+            dados.tipoDePagamento,
+            dados.criadoEm,
+            dados.pagoEm,
+            dados.estado,
         );
     }
 
-    public marcarComoPaga() {
-        if(this.estado !== "ABERTA")
+    public marcarComoPaga(dataDoPagamento: Date) {
+        if (this.#estado !== "ABERTA")
             throw new Error("Somente faturas abertas podem ser pagas!");
 
-        this.estado = "PAGA";
+        this.#estado = "PAGA";
+        this.#pagoEm = dataDoPagamento;
     }
 
     public marcarComoCancelada() {
-        if(this.estado !== "ABERTA")
+        if (this.#estado !== "ABERTA")
             throw new Error("Fatura não pode ser cancelada!")
 
-        this.estado = "CANCELADA";
+        this.#estado = "CANCELADA";
     }
 
-    public obterEstado() {
-        return this.estado;
+    public consultarValorEmMoeda() {
+        return this.#valor.paraMoeda();
     }
+
+    public consultarValorEmCentavos() {
+        return this.#valor.obterValorEmCentavos();
+    }
+
+    public consultarValorEmReais() {
+        return this.#valor.obterValorEmReais();
+    }
+
+    public estaAberta() { return this.#estado === "ABERTA"; }
+    public estaCancelada() { return this.#estado === "CANCELADA"; }
+    public estaPaga() { return this.#estado === "PAGA"; }
 
 }
