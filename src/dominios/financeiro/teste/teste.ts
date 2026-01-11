@@ -1,19 +1,7 @@
 import { Fatura } from "../dominio/entidades/Fatura";
+import { Gateway } from "../dominio/entidades/Gateway";
 import { Dinheiro } from "../dominio/objetos-de-valor/Dinheiro";
 
 
-const dinheiro = Dinheiro.criar(1050);
-
-const fatura = Fatura.criar({
-    id: "",
-    usuarioId: "",
-    gatewayId: "",
-    valor: dinheiro,
-    dataDeVencimento: new Date(),
-    tipoDePagamento: "CREDIT_CARD"
-});
-
-
-
-console.log(fatura.consultarValorEmMoeda())
-
+const dinheiro = Dinheiro.criar(20000);
+console.log(dinheiro.emReais())

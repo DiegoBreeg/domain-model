@@ -1,78 +1,62 @@
-enum UnidadeDoPeriodo {
-    DIA = "DIA",
-    MES = "MES",
-    ANO = "ANO",
-}
-
-export class Periodo {
-    readonly #unidade: UnidadeDoPeriodo;
-    readonly #quantidade: number;
-
-    private constructor(quantidade: number, unidade: UnidadeDoPeriodo) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Periodo = void 0;
+var UnidadeDoPeriodo;
+(function (UnidadeDoPeriodo) {
+    UnidadeDoPeriodo["DIA"] = "DIA";
+    UnidadeDoPeriodo["MES"] = "MES";
+    UnidadeDoPeriodo["ANO"] = "ANO";
+})(UnidadeDoPeriodo || (UnidadeDoPeriodo = {}));
+class Periodo {
+    #unidade;
+    #quantidade;
+    constructor(quantidade, unidade) {
         this.#unidade = unidade;
         this.#quantidade = quantidade;
     }
-
-    private static criar(quantidade: number, unidade: UnidadeDoPeriodo) {
+    static criar(quantidade, unidade) {
         return new Periodo(quantidade, unidade);
     }
-
-    private adicionarDias(data: Date) {
+    adicionarDias(data) {
         const novaData = new Date(data.getTime());
         novaData.setUTCDate(novaData.getUTCDate() + this.#quantidade);
         return novaData;
     }
-
-    private adicionarAnos(data: Date) {
+    adicionarAnos(data) {
         const novaData = new Date(data.getTime());
         const diaDoMesOriginal = novaData.getUTCDate();
-
         novaData.setUTCFullYear(novaData.getUTCFullYear() + this.#quantidade);
-
         if (novaData.getUTCDate() !== diaDoMesOriginal) {
             novaData.setUTCDate(0);
         }
-
         return novaData;
     }
-
-    private adicionarMeses(data: Date): Date {
+    adicionarMeses(data) {
         const novaData = new Date(data.getTime());
         const diaDoMesOriginal = novaData.getUTCDate();
-
         novaData.setUTCMonth(novaData.getUTCMonth() + this.#quantidade);
-
         if (novaData.getUTCDate() !== diaDoMesOriginal) {
             novaData.setUTCDate(0);
         }
-
         return novaData;
     }
-
-    public static deQuinzeDias(): Periodo {
+    static deQuinzeDias() {
         return Periodo.criar(15, UnidadeDoPeriodo.DIA);
     }
-
-    public static deUmMes(): Periodo {
+    static deUmMes() {
         return Periodo.criar(1, UnidadeDoPeriodo.MES);
     }
-
-    public static deUmAno(): Periodo {
+    static deUmAno() {
         return Periodo.criar(1, UnidadeDoPeriodo.ANO);
     }
-
-    public validoAte(assinadoEm: Date): Date {
-
+    validoAte(assinadoEm) {
         if (this.#unidade === UnidadeDoPeriodo.DIA)
             return this.adicionarDias(assinadoEm);
-
         if (this.#unidade === UnidadeDoPeriodo.ANO)
             return this.adicionarAnos(assinadoEm);
-
         if (this.#unidade === UnidadeDoPeriodo.MES)
             return this.adicionarMeses(assinadoEm);
-
         throw new Error(`Unidade de período inválida: ${this.#unidade}`);
     }
-
 }
+exports.Periodo = Periodo;

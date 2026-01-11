@@ -1,58 +1,56 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fatura = void 0;
+var Status;
+(function (Status) {
+    Status["ABERTA"] = "ABERTA";
+    Status["PAGA"] = "PAGA";
+    Status["CANCELADA"] = "CANCELADA";
+})(Status || (Status = {}));
 class Fatura {
     #id;
-    #usuarioId;
     #gatewayId;
+    #identificadorExterno;
     #valor;
     #dataDeVencimento;
-    #tipoDePagamento;
-    #criadoEm;
-    #pagoEm;
-    #estado;
-    constructor(id, usuarioId, gatewayId, valor, dataDeVencimento, tipoDePagamento, criadoEm, pagoEm, estado) {
+    #status;
+    #criadaEm;
+    #pagaEm;
+    constructor(id, gatewayId, identificadorExterno, valor, dataDeVencimento, status, criadaEm, pagaEm) {
         this.#id = id;
-        this.#usuarioId = usuarioId;
         this.#gatewayId = gatewayId;
+        this.#identificadorExterno = identificadorExterno;
         this.#valor = valor;
         this.#dataDeVencimento = dataDeVencimento;
-        this.#tipoDePagamento = tipoDePagamento;
-        this.#criadoEm = criadoEm;
-        this.#pagoEm = pagoEm;
-        this.#estado = estado;
+        this.#status = status;
+        this.#criadaEm = criadaEm;
+        this.#pagaEm = pagaEm;
     }
-    static criar(dados) {
+    static emitir(dados) {
         const dataAtual = new Date();
         if (dados.dataDeVencimento < dataAtual)
-            throw new Error("Data de vencimento não pode ser menor do a data atual!");
-        return new Fatura(dados.id, dados.usuarioId, dados.gatewayId, dados.valor, dados.dataDeVencimento, dados.tipoDePagamento, dataAtual, null, "ABERTA");
+            throw new Error("Data de vencimento não pode ser menor do a data atual");
+        return new Fatura(dados.id, dados.gatewayId, null, dados.valor, dados.dataDeVencimento, Status.ABERTA, dataAtual, null);
     }
     static restaurar(dados) {
-        return new Fatura(dados.id, dados.usuarioId, dados.gatewayId, dados.valor, dados.dataDeVencimento, dados.tipoDePagamento, dados.criadoEm, dados.pagoEm, dados.estado);
+        return new Fatura(dados.id, dados.gatewayId, dados.identificadorExterno, dados.valor, dados.dataDeVencimento, dados.status, dados.criadaEm, dados.pagaEm);
     }
-    marcarComoPaga(dataDoPagamento) {
-        if (this.#estado !== "ABERTA")
+    pagar(dataDoPagamento) {
+        if (this.#status !== "ABERTA")
             throw new Error("Somente faturas abertas podem ser pagas!");
-        this.#estado = "PAGA";
-        this.#pagoEm = dataDoPagamento;
+        this.#status = Status.PAGA;
+        this.#pagaEm = dataDoPagamento;
     }
-    marcarComoCancelada() {
-        if (this.#estado !== "ABERTA")
+    cancelar() {
+        if (this.#status !== "ABERTA")
             throw new Error("Fatura não pode ser cancelada!");
-        this.#estado = "CANCELADA";
+        this.#status = Status.CANCELADA;
     }
-    consultarValorEmMoeda() {
-        return this.#valor.paraMoeda();
+    valor() {
+        return this.#valor;
     }
-    consultarValorEmCentavos() {
-        return this.#valor.obterValorEmCentavos();
-    }
-    consultarValorEmReais() {
-        return this.#valor.obterValorEmReais();
-    }
-    estaAberta() { return this.#estado === "ABERTA"; }
-    estaCancelada() { return this.#estado === "CANCELADA"; }
-    estaPaga() { return this.#estado === "PAGA"; }
+    estaAberta() { return this.#status === Status.ABERTA; }
+    estaCancelada() { return this.#status === Status.CANCELADA; }
+    estaPaga() { return this.#status === Status.PAGA; }
 }
 exports.Fatura = Fatura;
