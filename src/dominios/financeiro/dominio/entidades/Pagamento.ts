@@ -1,66 +1,48 @@
 import { Dinheiro } from "../objetos-de-valor/Dinheiro";
 
-type DadosParaConfirmar = {
+type DadosParaRegistrar = {
     id: string;
     faturaId: string;
-    gatewayId: string;
-    identificadorExterno: string;
     valor: Dinheiro;
-    dataDeConfirmacaoNoGateway: Date;
-    processadoEm: Date;
+    pagoEm: Date;
 }
 
 type DadosParaRestaurar = {
     id: string;
     faturaId: string;
-    gatewayId: string;
-    identificadorExterno: string;
     valor: Dinheiro;
-    dataDeConfirmacaoNoGateway: Date;
-    processadoEm: Date;
-    criadoEm: Date;
+    registradoEm: Date;
+    pagoEm: Date;
 }
 
 export class Pagamento {
     #id: string;
     #faturaId: string;
-    #gatewayId: string;
-    #identificadorExterno: string;
     #valor: Dinheiro;
-    #dataDeConfirmacaoNoGateway: Date;
-    #processadoEm: Date;
-    #criadoEm: Date;
+    #registradoEm: Date;
+    #pagoEm: Date;
 
     private constructor(
         id: string,
         faturaId: string,
-        gatewayId: string,
-        identificadorExterno: string,
         valor: Dinheiro,
-        dataDeConfirmacaoNoGateway: Date,
-        processadoEm: Date,
-        criadoEm: Date,
+        registradoEm: Date,
+        pagoEm: Date,
     ) {
         this.#id = id;
         this.#faturaId = faturaId;
-        this.#gatewayId = gatewayId;
-        this.#identificadorExterno = identificadorExterno;
         this.#valor = valor;
-        this.#dataDeConfirmacaoNoGateway = dataDeConfirmacaoNoGateway;
-        this.#processadoEm = processadoEm;
-        this.#criadoEm = criadoEm;
+        this.#registradoEm = registradoEm;
+        this.#pagoEm = pagoEm;
     }
 
-    public static registrar(dados: DadosParaConfirmar): Pagamento {
+    public static registrar(dados: DadosParaRegistrar): Pagamento {
         return new Pagamento(
             dados.id,
             dados.faturaId,
-            dados.gatewayId,
-            dados.identificadorExterno,
             dados.valor,
-            dados.dataDeConfirmacaoNoGateway,
-            dados.processadoEm,
             new Date(),
+            dados.pagoEm,
         );
     }
 
@@ -68,12 +50,9 @@ export class Pagamento {
         return new Pagamento(
             dados.id,
             dados.faturaId,
-            dados.gatewayId,
-            dados.identificadorExterno,
             dados.valor,
-            dados.dataDeConfirmacaoNoGateway,
-            dados.processadoEm,
-            dados.criadoEm,
+            dados.registradoEm,
+            dados.pagoEm,
         );
     }
 

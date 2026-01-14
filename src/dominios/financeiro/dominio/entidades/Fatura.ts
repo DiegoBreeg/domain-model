@@ -1,74 +1,62 @@
 import { Dinheiro } from "../objetos-de-valor/Dinheiro";
+import { Vencimento } from "../objetos-de-valor/Vencimento";
+import { Pagamento } from "./Pagamento";
 
 enum Status {
     ABERTA = "ABERTA",
     PAGA = "PAGA",
     CANCELADA = "CANCELADA",
+    VENCIDA = "VENCIDA",
 }
 
 type DadosParaEmitir = {
     id: string;
-    gatewayId: string;
     valor: Dinheiro;
-    dataDeVencimento: Date;
+    vencimento: Vencimento;
 }
 
 type DadosParaRestaurar = {
-    id: string;
-    gatewayId: string;
-    identificadorExterno: string | null;
-    valor: Dinheiro;
-    dataDeVencimento: Date;
-    status: Status;
-    criadaEm: Date;
-    pagaEm: Date | null;
+    id: string,
+    valor: Dinheiro,
+    vencimento: Vencimento,
+    status: Status,
+    emitidaEm: Date,
 }
+
+type DadosParaRegistrarPagamento = {
+    pagamentoId: string;
+    pagoEm: Date;
+    valor: Dinheiro;
+};
 
 export class Fatura {
     #id: string;
-    #gatewayId: string;
-    #identificadorExterno: string | null;
     #valor: Dinheiro;
-    #dataDeVencimento: Date;
+    #vencimento: Vencimento;
     #status: Status;
-    #criadaEm: Date;
-    #pagaEm: Date | null;
+    #emitidaEm: Date;
 
     private constructor(
         id: string,
-        gatewayId: string,
-        identificadorExterno: string | null,
         valor: Dinheiro,
-        dataDeVencimento: Date,
+        vencimento: Vencimento,
         status: Status,
-        criadaEm: Date,
-        pagaEm: Date | null,
+        emitidaEm: Date,
     ) {
         this.#id = id;
-        this.#gatewayId = gatewayId;
-        this.#identificadorExterno = identificadorExterno;
         this.#valor = valor;
-        this.#dataDeVencimento = dataDeVencimento;
+        this.#vencimento = vencimento;
         this.#status = status;
-        this.#criadaEm = criadaEm;
-        this.#pagaEm = pagaEm;
+        this.#emitidaEm = emitidaEm;
     }
 
     public static emitir(dados: DadosParaEmitir): Fatura {
-        const dataAtual = new Date();
-
-        if (dados.dataDeVencimento < dataAtual)
-            throw new Error("Data de vencimento não pode ser menor do a data atual");
-
         return new Fatura(
             dados.id,
-            dados.gatewayId,
-            null,
             dados.valor,
-            dados.dataDeVencimento,
+            dados.vencimento,
             Status.ABERTA,
-            dataAtual,
-            null
+            new Date(),
         );
     }
 
@@ -76,22 +64,36 @@ export class Fatura {
 
         return new Fatura(
             dados.id,
-            dados.gatewayId,
-            dados.identificadorExterno,
             dados.valor,
-            dados.dataDeVencimento,
+            dados.vencimento,
             dados.status,
-            dados.criadaEm,
-            dados.pagaEm
+            dados.emitidaEm,
         );
     }
 
-    public pagar(dataDoPagamento: Date): void {
-        if (this.#status !== "ABERTA")
-            throw new Error("Somente faturas abertas podem ser pagas!");
+    public registrarPagamento(dados: DadosParaRegistrarPagamento): Pagamento {
+        this.verificarSeEstaAberta();
+        this.verificarValor(dados.valor);
+
+        const pagamento = Pagamento.registrar({
+            id: dados.pagamentoId,
+            faturaId: this.#id,
+            valor: dados.valor,
+            pagoEm: dados.pagoEm,
+        });
 
         this.#status = Status.PAGA;
-        this.#pagaEm = dataDoPagamento;
+        return pagamento;
+    }
+
+    private verificarSeEstaAberta() {
+        if (!this.estaAberta())
+            throw new Error("Somente faturas abertas podem ser pagas!");
+    }
+
+    private verificarValor(dinheiro: Dinheiro) {
+        if (!this.#valor.igual(dinheiro))
+            throw new Error("Valor pago diferente do valor da fatura");
     }
 
     public cancelar(): void {
@@ -102,6 +104,14 @@ export class Fatura {
 
     public valor(): Dinheiro {
         return this.#valor;
+    }
+
+    public vencimento(): Vencimento {
+        return this.#vencimento;
+    }
+
+    public obterId(): string | null {
+        return this.#id;
     }
 
     public estaAberta(): Boolean { return this.#status === Status.ABERTA; }

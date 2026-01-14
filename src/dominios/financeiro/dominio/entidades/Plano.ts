@@ -1,5 +1,6 @@
 import { Dinheiro } from "../objetos-de-valor/Dinheiro";
 import { Periodo } from "../objetos-de-valor/Periodo";
+import { Assinatura } from "./Assinatura";
 
 type DadosParaCriar = {
     id: string;
@@ -9,6 +10,7 @@ type DadosParaCriar = {
     periodo: Periodo;
     preco: Dinheiro;
     estaAtivo: boolean;
+    criadoEm: Date;
 }
 
 type DadosParaRestaurar = {
@@ -19,6 +21,12 @@ type DadosParaRestaurar = {
     periodo: Periodo;
     preco: Dinheiro;
     estaAtivo: boolean;
+    criadoEm: Date;
+}
+
+type DadosParaAssinar = {
+    assinaturaId: string,
+    clienteId: string,
 }
 
 export class Plano {
@@ -29,6 +37,7 @@ export class Plano {
     #periodo: Periodo;
     #preco: Dinheiro;
     #estaAtivo: boolean;
+    #criadoEm: Date;
 
     private constructor(
         id: string,
@@ -38,6 +47,7 @@ export class Plano {
         periodo: Periodo,
         preco: Dinheiro,
         estaAtivo: boolean,
+        criadoEm: Date,
     ) {
         this.#id = id;
         this.#gatewayId = gatewayId;
@@ -46,17 +56,22 @@ export class Plano {
         this.#periodo = periodo;
         this.#preco = preco;
         this.#estaAtivo = estaAtivo;
+        this.#criadoEm = criadoEm;
     }
 
     public static criar(dados: DadosParaCriar): Plano {
+        const nome = Plano.normalizarNome(dados.nome);
+        Plano.verificarNome(nome);
+
         return new Plano(
             dados.id,
             dados.gatewayId,
-            dados.nome,
+            nome,
             dados.descricao,
             dados.periodo,
             dados.preco,
-            dados.estaAtivo
+            dados.estaAtivo,
+            new Date(),
         );
     }
 
@@ -68,11 +83,31 @@ export class Plano {
             dados.descricao,
             dados.periodo,
             dados.preco,
-            dados.estaAtivo
+            dados.estaAtivo,
+            dados.criadoEm,
         );
     }
 
-    public assinar() {
+    public assinar(dados: DadosParaAssinar): Assinatura {
+        return Assinatura.contratar({
+            id: dados.assinaturaId,
+            clienteId: dados.clienteId,
+            gatewayId: this.#gatewayId,
+            periodo: this.#periodo,
+            valor: this.#preco,
+        });
+    }
 
+    private static normalizarNome(nome: string) {
+        return nome.trim();
+    }
+
+    private static verificarNome(nome: string) {
+        if (nome === "")
+            throw new Error("Nome não pode estar vazio");
+
+        if (nome.length < 3) {
+            throw new Error("Nome muito curto");
+        }
     }
 }

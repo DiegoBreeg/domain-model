@@ -33,4 +33,8 @@ export class Dinheiro {
         if (resultado < 0) throw new Error("Resultado não pode ser negativo");
         return new Dinheiro(resultado);
     }
+
+    public igual(outro: Dinheiro) {
+        return this.#centavos === outro.#centavos;
+    }
 }

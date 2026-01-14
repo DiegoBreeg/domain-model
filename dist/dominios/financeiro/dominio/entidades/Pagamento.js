@@ -4,27 +4,21 @@ exports.Pagamento = void 0;
 class Pagamento {
     #id;
     #faturaId;
-    #gatewayId;
-    #identificadorExterno;
     #valor;
-    #dataDeConfirmacaoNoGateway;
-    #processadoEm;
-    #criadoEm;
-    constructor(id, faturaId, gatewayId, identificadorExterno, valor, dataDeConfirmacaoNoGateway, processadoEm, criadoEm) {
+    #registradoEm;
+    #pagoEm;
+    constructor(id, faturaId, valor, registradoEm, pagoEm) {
         this.#id = id;
         this.#faturaId = faturaId;
-        this.#gatewayId = gatewayId;
-        this.#identificadorExterno = identificadorExterno;
         this.#valor = valor;
-        this.#dataDeConfirmacaoNoGateway = dataDeConfirmacaoNoGateway;
-        this.#processadoEm = processadoEm;
-        this.#criadoEm = criadoEm;
+        this.#registradoEm = registradoEm;
+        this.#pagoEm = pagoEm;
     }
     static registrar(dados) {
-        return new Pagamento(dados.id, dados.faturaId, dados.gatewayId, dados.identificadorExterno, dados.valor, dados.dataDeConfirmacaoNoGateway, dados.processadoEm, new Date());
+        return new Pagamento(dados.id, dados.faturaId, dados.valor, new Date(), dados.pagoEm);
     }
     static restaurar(dados) {
-        return new Pagamento(dados.id, dados.faturaId, dados.gatewayId, dados.identificadorExterno, dados.valor, dados.dataDeConfirmacaoNoGateway, dados.processadoEm, dados.criadoEm);
+        return new Pagamento(dados.id, dados.faturaId, dados.valor, dados.registradoEm, dados.pagoEm);
     }
 }
 exports.Pagamento = Pagamento;

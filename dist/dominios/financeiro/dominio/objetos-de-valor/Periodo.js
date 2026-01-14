@@ -49,13 +49,13 @@ class Periodo {
     static deUmAno() {
         return Periodo.criar(1, UnidadeDoPeriodo.ANO);
     }
-    validoAte(assinadoEm) {
+    validoAte(dataInicial) {
         if (this.#unidade === UnidadeDoPeriodo.DIA)
-            return this.adicionarDias(assinadoEm);
+            return this.adicionarDias(dataInicial);
         if (this.#unidade === UnidadeDoPeriodo.ANO)
-            return this.adicionarAnos(assinadoEm);
+            return this.adicionarAnos(dataInicial);
         if (this.#unidade === UnidadeDoPeriodo.MES)
-            return this.adicionarMeses(assinadoEm);
+            return this.adicionarMeses(dataInicial);
         throw new Error(`Unidade de período inválida: ${this.#unidade}`);
     }
 }

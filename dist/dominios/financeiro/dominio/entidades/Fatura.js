@@ -1,45 +1,52 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fatura = void 0;
+const Pagamento_1 = require("./Pagamento");
 var Status;
 (function (Status) {
     Status["ABERTA"] = "ABERTA";
     Status["PAGA"] = "PAGA";
     Status["CANCELADA"] = "CANCELADA";
+    Status["VENCIDA"] = "VENCIDA";
 })(Status || (Status = {}));
 class Fatura {
     #id;
-    #gatewayId;
-    #identificadorExterno;
     #valor;
-    #dataDeVencimento;
+    #vencimento;
     #status;
-    #criadaEm;
-    #pagaEm;
-    constructor(id, gatewayId, identificadorExterno, valor, dataDeVencimento, status, criadaEm, pagaEm) {
+    #emitidaEm;
+    constructor(id, valor, vencimento, status, emitidaEm) {
         this.#id = id;
-        this.#gatewayId = gatewayId;
-        this.#identificadorExterno = identificadorExterno;
         this.#valor = valor;
-        this.#dataDeVencimento = dataDeVencimento;
+        this.#vencimento = vencimento;
         this.#status = status;
-        this.#criadaEm = criadaEm;
-        this.#pagaEm = pagaEm;
+        this.#emitidaEm = emitidaEm;
     }
     static emitir(dados) {
-        const dataAtual = new Date();
-        if (dados.dataDeVencimento < dataAtual)
-            throw new Error("Data de vencimento não pode ser menor do a data atual");
-        return new Fatura(dados.id, dados.gatewayId, null, dados.valor, dados.dataDeVencimento, Status.ABERTA, dataAtual, null);
+        return new Fatura(dados.id, dados.valor, dados.vencimento, Status.ABERTA, new Date());
     }
     static restaurar(dados) {
-        return new Fatura(dados.id, dados.gatewayId, dados.identificadorExterno, dados.valor, dados.dataDeVencimento, dados.status, dados.criadaEm, dados.pagaEm);
+        return new Fatura(dados.id, dados.valor, dados.vencimento, dados.status, dados.emitidaEm);
     }
-    pagar(dataDoPagamento) {
-        if (this.#status !== "ABERTA")
-            throw new Error("Somente faturas abertas podem ser pagas!");
+    registrarPagamento(dados) {
+        this.verificarSeEstaAberta();
+        this.verificarValor(dados.valor);
+        const pagamento = Pagamento_1.Pagamento.registrar({
+            id: dados.pagamentoId,
+            faturaId: this.#id,
+            valor: dados.valor,
+            pagoEm: dados.pagoEm,
+        });
         this.#status = Status.PAGA;
-        this.#pagaEm = dataDoPagamento;
+        return pagamento;
+    }
+    verificarSeEstaAberta() {
+        if (!this.estaAberta())
+            throw new Error("Somente faturas abertas podem ser pagas!");
+    }
+    verificarValor(dinheiro) {
+        if (!this.#valor.igual(dinheiro))
+            throw new Error("Valor pago diferente do valor da fatura");
     }
     cancelar() {
         if (this.#status !== "ABERTA")
@@ -48,6 +55,12 @@ class Fatura {
     }
     valor() {
         return this.#valor;
+    }
+    vencimento() {
+        return this.#vencimento;
+    }
+    obterId() {
+        return this.#id;
     }
     estaAberta() { return this.#status === Status.ABERTA; }
     estaCancelada() { return this.#status === Status.CANCELADA; }
